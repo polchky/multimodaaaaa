@@ -20,12 +20,8 @@ class glove:
         return message[1:-1].rsplit(":")
         
     def get_hand_position(self):
-        position = 0
         values = self.get_values()
-        for finger in range(3):
-            is_closed = 1 if values(finger) > (self.cal_high[finger] - self.cal_low[finger])/2 else 0
-            position += is_closed * 2**finger
-        return position
+        return [1 if values(i) > (self.cal_high[i] - self.cal_low[i])/2 else 0 for i in range(3)]
         
     def calibrate(self,is_hand_closed):
         if is_hand_closed:

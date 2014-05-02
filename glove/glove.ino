@@ -1,6 +1,6 @@
-
 int sensor0;
 int sensor1;
+int sensor2;
 int sensor3;
 void setup()
 {
@@ -9,8 +9,13 @@ void setup()
 
 void loop()
 {
-  sensor3 = analogRead(3);
-  
-  Serial.println("Sensor 3");
-  Serial.print(sensor3);
+  if (Serial.available()){
+    Serial.read();
+    Serial.print('s');
+    for (int i = 0; i < 4; i++){
+      Serial.print(analogRead(i));
+      Serial.print(':');
+    }
+    Serial.println('e');
+  }
 }

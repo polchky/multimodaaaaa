@@ -12,10 +12,11 @@ void loop()
   if (Serial.available()){
     Serial.read();
     Serial.print('s');
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 3; i++){
       Serial.print(analogRead(i));
       Serial.print(':');
     }
+    Serial.print(analogRead(3));
     Serial.println('e');
   }
 }

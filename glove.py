@@ -20,7 +20,7 @@ class Glove:
         return message[1:-1].rsplit(":")
         
     def isCalibrated(self):
-        return len(self.calHigh + self.calLow) == 8
+        return len(self.calFist + self.calOpen) == 8
         
     def getHandPosition(self):
         values = self.getRawValues()
@@ -35,3 +35,5 @@ class Glove:
 Glove.fuck = [0,0,1,0]
 Glove.yeah = [0,1,1,0]
 Glove.fist = [0,0,0,0]
+Glove.open = [1,1,1,1]
+Glove.point = [0,1,0,0]

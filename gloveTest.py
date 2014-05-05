@@ -21,6 +21,7 @@ while True:
         for i in range(4):
             value = (values[i]-openValues[i]) * (height-1) / fistValues[i]
             if value > height-1:value = height-1
+            if value < 0:value = 0
             image[value:,100*i+48*(i+1):(i+1)*148] = 255
     else:
         image = blackImage.copy()

@@ -74,8 +74,7 @@ class Kinect:
             cv2.imshow("Mask", mask)
             time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
             timer -= Kinect.CALIBRATION_SLEEP
-
-        print(mask.mean())
+        
         mask = mask.astype(np.uint8)
         c = imageutils.centroid(self.thresh)
         threshold = mask[c[1], c[0]] * 0.8

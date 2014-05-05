@@ -18,8 +18,8 @@ image = np.zeros((height,640))
 
 while True:
     image[:,:] = 0
-    if glove.isCalibrated():
-        values = glove.getCalibratedValues()
+    if glove.is_calibrated():
+        values = glove.get_calibrated_values()
         for i in range(4):
             value = values[i] * height
             image[value:,100*i+48*(i+1):(i+1)*148] = 255
@@ -27,10 +27,10 @@ while True:
     k = cv2.waitKey(10)
     if k == ord('f'):
         glove.calibrate(1)
-        fistValues = glove.calFist
+        fist_values = glove.cal_fist
     elif k == ord('o'):
         glove.calibrate(0)
-        openValues = glove.calOpen
+        open_values = glove.cal_open
     elif k == ord('q'):
         cv2.destroyAllWindows()
         break

@@ -6,7 +6,7 @@ Created on Tue Apr  8 10:44:19 2014
 """
 import uinput, time
 
-class joystick:
+class Joystick:
     def __init__(self,fps):
         
         self.min_secs = 0.5 # seconds
@@ -72,45 +72,4 @@ class joystick:
         self.device.emit(name,0)
         
         
-        
-myjoystick = joystick(3)
-myjoystick.update({'parachute': 1,
-            'graffiti': 2,
-            'fuck': 3,
-            'yeah': 4,
-            'forward': 0,
-            'X': 2,
-            'Y': 1,
-            'RX': 5,
-            'RY': 0})
-myjoystick.update({'parachute': 1,
-            'graffiti': 2,
-            'fuck': 3,
-            'yeah': 4,
-            'forward': 0,
-            'X': 2,
-            'Y': 1,
-            'RX': 5,
-            'RY': 0})
-myjoystick.update({'parachute': 1,
-            'graffiti': 2,
-            'fuck': 3,
-            'yeah': 4,
-            'forward': 0,
-            'X': 2,
-            'Y': 1,
-            'RX': 5,
-            'RY': 0})
-myjoystick.update({'parachute': 1,
-            'graffiti': 2,
-            'fuck': 3,
-            'yeah': 4,
-            'forward': 0,
-            'X': 2,
-            'Y': 1,
-            'RX': 5,
-            'RY': 0})
-
-
-
 

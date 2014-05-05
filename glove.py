@@ -8,11 +8,13 @@ import serial
 
 class Glove:
     FINGER_COUNT = 4
-    FUCK  = [False, False, True, False]
-    YEAH  = [False, True, True, False]
-    FIST  = [False, False, False, False]
-    OPEN  = [True, True, True, True]
-    POINT = [False, False, True, False]
+    FINGER_POSITIONS = {
+        'FUCK':  [False, False, True, False],
+        'YEAH':  [False, True, True, False],
+        'FIST':  [False, False, False, False],
+        'OPEN':  [True, True, True, True],
+        'GRAF':  [False, True, False, False]
+    }
     
     def __init__(self, port = "/dev/ttyACM0", baud=9600):
         self.ser = serial.Serial(port,baud)
@@ -41,7 +43,7 @@ class Glove:
         
     def get_hand_position(self):
         values = self.getCalibratedValues()
-        return [values[i] > 0.5 for i in range(Glove.FINGER_COUNT)]
+        return [values[i] < 0.5 for i in range(Glove.FINGER_COUNT)]
      
     def calibrate(self,is_hand_closed):
         if is_hand_closed:

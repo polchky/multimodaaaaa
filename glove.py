@@ -7,33 +7,45 @@ Created on Mon Apr 28 13:46:11 2014
 import serial
 
 class Glove:
-    def __init__(self, port, baud):
+    FINGER_COUNT = 4
+    FUCK  = [False, False, True, False]
+    YEAH  = [False, True, True, False]
+    FIST  = [False, False, False, False]
+    OPEN  = [True, True, True, True]
+    POINT = [False, False, True, False]
+    
+    def __init__(self, port, baud=9600):
         self.ser = serial.Serial(port,baud)
         self.calFist = []
         self.calOpen = []
+        
+    def isCalibrated(self):
+        return len(self.calFist + self.calOpen) == 2 * Glove.FINGER_COUNT
         
     def getRawValues(self):
         while True:
             self.ser.write("a")
             message = self.ser.readline().rstrip()
             if message[0] == "s" and message[-1] == "e":break
-        return message[1:-1].rsplit(":")
-        
-    def isCalibrated(self):
-        return len(self.calFist + self.calOpen) == 8
+        return [int(v) for v in message[1:-1].rsplit(":")[:-1]]
+
+    def getCalibratedValues(self):
+        values = self.getRawValues()
+        cal = []
+        for i in range(Glove.FINGER_COUNT):
+            value = float(values[i]-self.calOpen[i]) / (self.calFist[i] - self.calOpen[i])
+            if value < 0:value = 0
+            if value > 1: value = 1
+            cal.append(value)
+        return cal
         
     def getHandPosition(self):
-        values = self.getRawValues()
-        return [1 if values(i) > (self.calFIst[i] - self.calOpen[i])/2 else 0 for i in range(3)]
+        values = self.getCalibratedValues()
+        return [values[i] > 0.5 for i in range(Glove.FINGER_COUNT)]
         
     def calibrate(self,isHandClosed):
         if isHandClosed:
             self.calFist = self.getRawValues()
         else:
             self.calOpen = self.getRawValues()
-            
-Glove.fuck = [0,0,1,0]
-Glove.yeah = [0,1,1,0]
-Glove.fist = [0,0,0,0]
-Glove.open = [1,1,1,1]
-Glove.point = [0,1,0,0]
+  

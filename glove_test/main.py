@@ -2,6 +2,7 @@
 # State Machine pattern using 'if' statements
 # to determine the next state.
 from glove import Glove
+from joystick import Joystick
 from machine import State, Machine
 import time
 # A different subclass for each state:
@@ -40,7 +41,8 @@ class Calibrating(State):
         return Mma.waiting
         #return Mma.calibrating
     def on_stop(self):
-        Mma.kinect.killDepth()
+        return
+        #Mma.kinect.killDepth()
     def on_start(self):
         print('entering calibration state')
         #Mma.kinect.initCalibration()
@@ -57,6 +59,7 @@ class Waiting(State):
 class Walking(State):
     def run(self):
         Mma.joystick.walk(Mma.glove.get_hand_position())
+        return
     def next(self):
         if Mma.joystick.is_walking():
             return Mma.walking
@@ -83,6 +86,7 @@ class Playing(State):
 class Mma(Machine):
     #init modules
     glove = Glove()
+    joystick = Joystick()
     
     def __init__(self):
         # Initial state

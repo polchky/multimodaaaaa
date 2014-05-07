@@ -24,7 +24,7 @@ class Joystick:
         self.state = dict.fromkeys(actions, 0)
         self.device = uinput.Device([a[0] for a in actions.values()], name)
         self.parachute_opening = False
-        self.last_gesture = Glove.OPEN
+        self.last_gesture = Glove.FINGER_POSITIONS['OPEN']
         self.last_time_pressed = 0
         self.last_time_changed = 0
         self.ready_to_graffiti = False
@@ -52,7 +52,7 @@ class Joystick:
         elif fingers == Glove.FINGER_POSITIONS['FIST']:
             if self.ready_to_graffiti:
                 self.emit('graf', 1)
-                self.ready_to_graffiti = False
+                #self.ready_to_graffiti = False
             else:
                 self.parachute_opening = True  
         self.last_time_pressed = self.get_time()

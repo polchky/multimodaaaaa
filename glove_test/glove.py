@@ -42,7 +42,7 @@ class Glove:
         return cal
         
     def get_hand_position(self):
-        values = self.getCalibratedValues()
+        values = self.get_calibrated_values()
         return [values[i] < 0.5 for i in range(Glove.FINGER_COUNT)]
      
     def calibrate(self,is_hand_closed):

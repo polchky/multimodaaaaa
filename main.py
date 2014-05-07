@@ -61,8 +61,11 @@ class Playing(State):
     def run(self):
         Mma.joystick.update_buttons(Mma.glove.get_hand_position())
         Mma.joystick.update_joystick(Mma.kinect.get_delta())
+        if Mma.joystick.is_parachute_opening():
+            Mma.kinect.check_parachute()
     def next(self):
-        if Mma.joystick.is_parachute_opened():
+        if Mma.kinect.is_parachute_opened():
+            Mma.joystick.open_parachute()
             return Mma.neutral
         return Mma.playing
 

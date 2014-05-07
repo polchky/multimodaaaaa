@@ -60,13 +60,15 @@ class Joystick:
     def open_parachute(self):
         self.emit('para', 1)
     
-    def update_joystick(self, XY):
+    #def update_joystick(self, XY):
         
     def walk(self,fingers):
         if self.last_gesture == Glove.FINGER_POSITIONS['OPEN']:
-            self.device.emit('walk', 1)
+            #self.device.emit('walk', 1)
+            print('boots: start walking!')
         if fingers == Glove.FINGER_POSITIONS['OPEN']:
-            self.device.emit('walk', 0)
+            #self.device.emit('walk', 0)
+            print('stopped walking')
             self.last_time_changed = self.get_time()
         self.last_gesture = fingers
         
@@ -83,7 +85,8 @@ class Joystick:
         if self.actions[k][1] == Joystick.ANALOG:
             self.device.emit(self.actions[k][0], v, syn)
         elif self.actions[k][1] == Joystick.BUTTON and v != 0:
-            self.device.emit_click(self.actions[k][0], syn)
+            #self.device.emit_click(self.actions[k][0], syn)
+            print('button clicked: %s' % str(self.actions[k][0]))
             
     def is_parachute_opening(self):
         return self.parachute_opening

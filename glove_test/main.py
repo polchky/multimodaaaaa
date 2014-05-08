@@ -1,6 +1,7 @@
 # StateMachine/Mma1/MmaTest.py
 # State Machine pattern using 'if' statements
 # to determine the next state.
+from kinect import Kinect
 from glove import Glove
 from joystick import Joystick
 from machine import State, Machine
@@ -9,47 +10,34 @@ import time
 
 class Neutral(State):
     def run(self):
-        # self.key = Mma.kinect.getKey()
-        #if self.key == Mma.kinect.calibrateTable:
-        #    Mma.kinect.calibrateTable()
-        #elif self.key == Mma.kinect.calibrateGloveOpen: 
+        print('Enter input: ')
         self.key = raw_input()
         if self.key == 'o':
             Mma.glove.calibrate(0)
-       #elif self.key == Mma.kinect.calibrateGloveClosed:
         elif self.key == 'f':
             Mma.glove.calibrate(1)
+        elif self.key == 'k':
+            pass
+            #Mma.kinect.calibrate_mask()
+        elif self.key == 'c':
+            pass
+            #Mma.kinect.update()
+            #Mma.kinect.set_origin()
     def next(self):
-        #if self.key == Mma.kinect.calibrateBody:
-        if self.key == 'c':
-            #if Mma.kinect.isTableCalibrated():
-            if Mma.glove.is_calibrated():
-                return Mma.calibrating
-            else:print("Glove not calibrated.")
-            #else:print("Table not calibrated.")
+        if self.key == 'n':
+            if Mma.glove.is_calibrated() == False:
+                print('Glove not calibrated\n')
+            #elif Mma.kinect.centroid == (0,0):
+            #    print('Kinect not calibrated\n')
+            else:return Mma.waiting
         return Mma.neutral
     def on_start(self):
         print('entering neutral state')
-        print('<o> / <f> to calibrate glove, <c> to continue\n')        
+        print('o\tcalibrate glove open\nf\tcalibrate glove closed\nk\tcalibrate kinect\nc\tset centroid\n')        
 
-class Calibrating(State):
-    def run(self):
-        time.sleep(1)
-        #Mma.kinect.Calibrate()
-    def next(self):
-        #if Mma.kinect.isCalibrationFinished():
-        return Mma.waiting
-        #return Mma.calibrating
-    def on_stop(self):
-        return
-        #Mma.kinect.killDepth()
-    def on_start(self):
-        print('entering calibration state')
-        #Mma.kinect.initCalibration()
-        
         
 class Waiting(State):
-    def next(self):
+    def next(self): 
         if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
             return Mma.walking
         return Mma.waiting
@@ -78,14 +66,18 @@ class Playing(State):
         #if Mma.kinect.is_parachute_opened():
             #Mma.joystick.open_parachute()
         if Mma.joystick.is_parachute_opening():
+            Mma.joystick.open_parachute()
             return Mma.neutral
         return Mma.playing
     def on_start(self):
         print('entering playing state')
+    def on_stop(self):
+        Mma.joystick.end_game()
 
 class Mma(Machine):
     #init modules
-    glove = Glove()
+    #kinect = Kinect()
+    glove = Glove(port = "/dev/ttyACM0")
     joystick = Joystick()
     
     def __init__(self):
@@ -94,7 +86,6 @@ class Mma(Machine):
 
 # Static variable initialization:
 Mma.neutral = Neutral()
-Mma.calibrating = Calibrating()
 Mma.waiting = Waiting()
 Mma.playing = Playing()
 Mma.walking = Walking()

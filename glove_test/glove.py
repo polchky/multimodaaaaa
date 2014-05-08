@@ -10,7 +10,8 @@ class Glove:
     FINGER_COUNT = 4
     FINGER_POSITIONS = {
         'FUCK':  [False, False, True, False],
-        'YEAH':  [False, True, True, False],
+        'YEAH': [[False, True, True, False],
+                 [True, False, False, False]],
         'FIST':  [False, False, False, False],
         'OPEN':  [True, True, True, True],
         'GRAF':  [False, True, False, False]

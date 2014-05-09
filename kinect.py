@@ -16,9 +16,12 @@ class Kinect:
     def __init__(self):
         self.tmin = 200
         self.tmax = 240
+        self.dmin = (np.inf, np.inf)
+        self.dmax = (0, 0)
         self.origin = (0, 0)
         self.centroid = (0, 0)
         self.delta = (0, 0)
+        self.direction = (0, 0)
         self.mask = np.zeros(Kinect.SIZE, np.uint8)
         self.raw = np.zeros(Kinect.SIZE, np.uint8)
         self.thresh = np.zeros(Kinect.SIZE, np.uint8)
@@ -46,7 +49,7 @@ class Kinect:
 
     def update(self):
         self.update_image()
-        self.update_delta()
+        self.update_direction()
 
     def update_raw(self):
         self.raw = self.get_raw()
@@ -68,7 +71,6 @@ class Kinect:
         while timer > 0:
             self.update_image()
             mask += self.thresh / n
-            cv2.imshow("Mask", mask)
             time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
             timer -= Kinect.CALIBRATION_SLEEP
 
@@ -79,18 +81,38 @@ class Kinect:
         mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
 
+    def calibrate_direction(self, timer=3000):
+        xmin, ymin = (np.inf, np.inf)
+        xmax, ymax = (0, 0)
+        while timer > 0:
+            self.update()
+            x, y = self.delta
+            xmin, ymin = min(xmin, x), min(ymin, y)
+            xmax, ymax = max(xmax, x), max(ymax, y)
+            time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
+            timer -= Kinect.CALIBRATION_SLEEP
+        self.dmin = xmin, ymin
+        self.dmax = xmax, ymax
+
     def update_centroid(self):
         self.centroid = imageutils.centroid(self.masked, Kinect.CENTROID_STEP)
 
-    def update_delta(self):
+    def update_direction(self):
         self.update_centroid()
         self.delta = self.get_delta()
+        self.direction = self.get_direction()
         return self.centroid
 
     def get_delta(self):
         ox, oy = self.origin
         cx, cy = self.centroid
         return cx - ox, cy - oy
+
+    def get_direction(self):
+        x, y = self.delta
+        xmin, ymin = self.dmin
+        xmax, ymax = self.dmax
+        return (x-xmin)/(xmax-xmin), (y-ymin)/(ymax-ymin)
 
     def set_threshold(self, tmin, tmax):
         self.tmin = tmin

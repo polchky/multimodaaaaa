@@ -21,21 +21,23 @@ class Joystick:
         'yeah': (uinput.BTN_3, BUTTON),
         'walk': (uinput.KEY_W, BUTTON)
     }
+    DEV_INPUT = '/dev/input/'
     
     def __init__(self, actions=DEFAULT_ACTIONS, name='Gamepad'):
         self.actions = actions
         self.state = dict.fromkeys(actions, 0)
 
         self.parachute_opening = False
-        self.last_gesture = Glove.OPEN
+        self.last_gesture = Glove.FINGER_POSITIONS['OPEN']
         self.last_time_pressed = 0
         self.last_time_changed = 0
         self.ready_to_graffiti = False
 
-        ev_before = [f for f in os.listdir('/dev/input/') if f.startswith('event')]
+        ev_before = [f for f in os.listdir(Joystick.DEV_INPUT) if f.startswith('event')]
         self.device = uinput.Device([a[0] for a in actions.values()], name)
-        ev_after = [f for f in os.listdir('/dev/input/') if f.startswith('event')]
-        self.event  = list(set(ev_before)-set(ev_after))[0]
+        ev_after = [f for f in os.listdir(Joystick.DEV_INPUT) if f.startswith('event')]
+        self.event  = Joystick.DEV_INPUT + list(set(ev_after) - set(ev_before))[0]
+        
     """
     def update(self, XY, fingers):
         for k in actions:
@@ -69,7 +71,8 @@ class Joystick:
         self.emit('para', 1)
     
     def update_joystick(self, XY):
-        
+        pass
+    
     def walk(self,fingers):
         if self.last_gesture == Glove.FINGER_POSITIONS['OPEN']:
             self.device.emit('walk', 1)
@@ -107,4 +110,4 @@ class Joystick:
         return self.get_time() - self.last_time_changed > self.MIN_PRESS_TIME
 
     def start_xboxdrv(self):
-        subprocess.call(['./start_xboxdrv', self.event])
+        subprocess.Popen(['./start_xboxdrv.sh', self.event])

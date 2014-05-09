@@ -19,8 +19,9 @@ def resize(image, factor):
 def centroid(image, step=1):
     h, w = image.shape
     arr = image[::step, ::step]
+    white = arr > 0
     yy, xx = np.mgrid[0:h:step, 0:w:step]
-    c = [xx[arr > 0].mean(), yy[arr > 0].mean()]
+    c = [xx[white].mean(), yy[white].mean()]
     c = tuple(int(i) if not np.isnan(i) else 0 for i in c)
     return c
 

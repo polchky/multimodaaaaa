@@ -10,6 +10,8 @@ class Kinect:
     CALIBRATION_SLEEP = 100
     CENTROID_STEP = 16
     KERNEL = np.ones((5, 5), np.uint8)
+    ERODE_ITERATIONS = 8
+    DILATE_ITERATIONS = 4
 
     def __init__(self):
         self.tmin = 200
@@ -36,10 +38,6 @@ class Kinect:
         image[image > self.tmax] = 0
         image[image != 0] = 255
         return image
-
-        # _, image = cv2.threshold(image, 254,255, cv2.THRESH_TOZERO_INV)
-        # _, image = cv2.threshold(image, self.tmin,255, cv2.THRESH_TOZERO)
-        # _, image = cv2.threshold(image, self.tmax,255, cv2.THRESH_BINARY_INV)
 
     @staticmethod
     def get_masked(image, mask):
@@ -69,18 +67,16 @@ class Kinect:
         n = timer / Kinect.CALIBRATION_SLEEP
         while timer > 0:
             self.update_image()
-            #m = cv2.threshold(self.thresh, 1, 255, cv2.THRESH_BINARY)[1]
             mask += self.thresh / n
             cv2.imshow("Mask", mask)
             time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
             timer -= Kinect.CALIBRATION_SLEEP
-        
-        mask = mask.astype(np.uint8)
-        c = imageutils.centroid(self.thresh)
+
+        c = imageutils.centroid(mask)
         threshold = mask[c[1], c[0]] * 0.8
         mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
-        mask = cv2.erode(mask, Kinect.KERNEL, iterations=8)
-        mask = cv2.dilate(mask, Kinect.KERNEL, iterations=4)
+        mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
+        mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
 
     def update_centroid(self):

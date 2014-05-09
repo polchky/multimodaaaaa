@@ -1,4 +1,7 @@
-import uinput, time
+import uinput
+import time
+import os
+import subprocess
 from glove import Glove
 
 
@@ -22,12 +25,17 @@ class Joystick:
     def __init__(self, actions=DEFAULT_ACTIONS, name='Gamepad'):
         self.actions = actions
         self.state = dict.fromkeys(actions, 0)
-        self.device = uinput.Device([a[0] for a in actions.values()], name)
+
         self.parachute_opening = False
         self.last_gesture = Glove.OPEN
         self.last_time_pressed = 0
         self.last_time_changed = 0
         self.ready_to_graffiti = False
+
+        ev_before = [f for f in os.listdir('/dev/input/') if f.startswith('event')]
+        self.device = uinput.Device([a[0] for a in actions.values()], name)
+        ev_after = [f for f in os.listdir('/dev/input/') if f.startswith('event')]
+        self.event  = list(set(ev_before)-set(ev_after))[0]
     """
     def update(self, XY, fingers):
         for k in actions:
@@ -97,3 +105,6 @@ class Joystick:
         
     def check_last_changed(self):
         return self.get_time() - self.last_time_changed > self.MIN_PRESS_TIME
+
+    def start_xboxdrv(self):
+        subprocess.call(['./start_xboxdrv', self.event])

@@ -22,6 +22,7 @@ class Neutral(State):
             Mma.kinect.calibrate_direction(self.window)
             print('ok')
             time.sleep(1)
+            Mma.kinect.update()
             Mma.kinect.set_origin()
             print('ok')
             time.sleep(1)
@@ -45,6 +46,7 @@ class Neutral(State):
             Mma.kinect.calibrate_direction(self.window)
             print('done')
         elif self.key == ord('c'):
+            Mma.kinect.update()
             Mma.kinect.set_origin()  
             print('done')
     def next(self):
@@ -69,23 +71,16 @@ class Neutral(State):
         'q\tend calibration\n')        
     def on_stop(self):
         cv2.destroyAllWindows()
+        Mma.kinect.destroy_windows()
         
 class Waiting(State):
     def next(self): 
-        if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
-            return Mma.walking
+        #if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
+        #    return Mma.walking
         return Mma.waiting
-    """testing only
-    def on_start(self):
-        print(Mma.kinect.dmax)
-        print(Mma.kinect.dmin)
-        print('entering waiting state')
     def run(self):
-        time.sleep(2)
         Mma.kinect.update()
-        print(Mma.kinect.get_direction())
-        print(Mma.kinect.delta)
-    """
+        Mma.joystick.update_joystick(Mma.kinect.get_direction())
       
 class Walking(State):
     def run(self):

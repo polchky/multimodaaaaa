@@ -35,7 +35,13 @@ while 1:
 
     cv2.imshow("Delta", delta)
 
-    key = cv2.waitKey(10)
+    key = cv2.waitKey(20)
+    if key == ord('t'):
+        k.calibrate_mask("Raw")
+        cv2.waitKey(1000)
+        k.calibrate_direction("Raw")
+        cv2.waitKey(1000)
+        k.set_origin()
     if key == 27:
         break
     elif key == ord('c'):

@@ -17,7 +17,7 @@ class Kinect:
     def __init__(self):
         self.tmin = 0
         self.tmax = 220
-        self.dmin = (np.inf, np.inf)
+        self.dmin = (Kinect.SIZE[1],Kinect.SIZE[0])
         self.dmax = (0, 0)
         self.origin = (0, 0)
         self.centroid = (0, 0)
@@ -115,10 +115,10 @@ class Kinect:
         return cx - ox, cy - oy
 
     def get_direction(self):
-        x, y = self.delta
+        x, y = self.centroid
         xmin, ymin = self.dmin
         xmax, ymax = self.dmax
-        return 1.*(x-xmin)/(xmax-xmin), 1.*(y-ymin)/(ymax-ymin)
+        return 2.*(x-xmin)/(xmax-xmin)-1, -2.*(y-ymin)/(ymax-ymin)+1
 
     def set_threshold(self, tmin, tmax):
         self.tmin = tmin
@@ -151,6 +151,18 @@ class Kinect:
         
     def display(self,window):
         if self.calibrated[0]:
-            cv2.imshow(window, self.masked)
+            image = self.masked
         else:
-            cv2.imshow(window, self.thresh)
+            image = self.thresh
+        cv2.circle(image, self.origin, 8, 127, -1)
+        cv2.circle(image, self.origin, 6, 0, -1)
+        cv2.circle(image, self.centroid, 6, 200, -1)
+        cv2.circle(image, self.dmax, 6, 200, -1)
+        cv2.circle(image, self.dmin, 6, 200, -1)
+        cv2.line(image, self.origin, self.centroid, 255, 1)
+        cv2.putText(image,str(self.delta), (5,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.putText(image,str([round(self.get_direction()[0],2), round(self.get_direction()[1],2)]), (300,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.imshow(window, image)
+        
+    def destroy_windows(self):
+        cv2.destroyAllWindows()

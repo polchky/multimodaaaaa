@@ -32,11 +32,11 @@ class Joystick:
         'X': ((uinput.KEY_W, uinput.KEY_S), FALSE_ANALOG),
         'Y': ((uinput.KEY_D, uinput.KEY_A), FALSE_ANALOG),
         'RX': (uinput.REL_X, ANALOG),
-        'RY': (uinput.ABS_Y, ANALOG),
+        'RY': (uinput.REL_Y, ANALOG),
         'para': (uinput.KEY_SPACE, BUTTON),
         'graf': (uinput.KEY_LEFTCTRL, BUTTON),
-        'fuck': (uinput.KEY_LEFTALT, BUTTON),
-        'yeah': (uinput.KEY_LEFTSHIFT, BUTTON),
+        'fuck': (uinput.BTN_0, BUTTON),
+        'yeah': (uinput.BTN_2, BUTTON),
         'walk': (uinput.KEY_W, BUTTON)
     }
 
@@ -48,11 +48,11 @@ class Joystick:
         uinput_events = []
         for a, t in actions.values():
             if t in (Joystick.BUTTON, Joystick.MOUSE):
-                uinput_args.append(a)
+                uinput_events.append(a)
             if t == Joystick.ANALOG:
-                uinput_args.append(a + Joystick.ANALOG_RANGE)
+                uinput_events.append(a + Joystick.ANALOG_RANGE)
             elif t == Joystick.FALSE_ANALOG:
-                uinput_args.extend(a)
+                uinput_events.extend(a)
 
         ev_before = [f for f in os.listdir(Joystick.DEV_INPUT) if f.startswith('event')]
         self.device = uinput.Device(uinput_events, name)
@@ -96,8 +96,6 @@ class Joystick:
             if self.ready_to_graffiti:
                 self.emit('graf', 1)
                 self.ready_to_graffiti = False
-            else:
-                self.parachute_opening = True
         self.last_time_pressed = self.get_time()
 
     def open_parachute(self):

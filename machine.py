@@ -31,5 +31,5 @@ class State:
     def on_start(self):
         pass
     
-    def on_exit(self):
+    def on_stop(self):
         pass

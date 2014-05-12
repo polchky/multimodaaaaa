@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import time
 import imageutils
+from glove import Glove
 
 
 class Kinect:
@@ -14,8 +15,8 @@ class Kinect:
     DILATE_ITERATIONS = 4
 
     def __init__(self):
-        self.tmin = 200
-        self.tmax = 240
+        self.tmin = 0
+        self.tmax = 220
         self.dmin = (np.inf, np.inf)
         self.dmax = (0, 0)
         self.origin = (0, 0)
@@ -26,12 +27,13 @@ class Kinect:
         self.raw = np.zeros(Kinect.SIZE, np.uint8)
         self.thresh = np.zeros(Kinect.SIZE, np.uint8)
         self.masked = np.zeros(Kinect.SIZE, np.uint8)
+        self.calibrated = [False, False, False]
+        self.parachute_state = 'closed'
 
     @staticmethod
     def get_raw():
         raw, _ = freenect.sync_get_depth()
         raw = imageutils.convert(raw)
-        raw = cv2.flip(raw, 1)
         return raw
 
     def get_thresh(self, image):
@@ -65,13 +67,14 @@ class Kinect:
         self.update_thresh()
         self.update_masked()
 
-    def calibrate_mask(self, timer=3000):
+    def calibrate_mask(self, window, timer=3000):
         mask = np.zeros(Kinect.SIZE, np.uint8)
         n = timer / Kinect.CALIBRATION_SLEEP
         while timer > 0:
             self.update_image()
             mask += self.thresh / n
-            time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
+            self.display(window)
+            cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
 
         c = imageutils.centroid(mask)
@@ -80,19 +83,22 @@ class Kinect:
         mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
         mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
+        self.calibrated[0] = True
 
-    def calibrate_direction(self, timer=3000):
+    def calibrate_direction(self, window, timer=3000):
         xmin, ymin = (np.inf, np.inf)
         xmax, ymax = (0, 0)
         while timer > 0:
             self.update()
+            self.display(window)
             x, y = self.delta
             xmin, ymin = min(xmin, x), min(ymin, y)
             xmax, ymax = max(xmax, x), max(ymax, y)
-            time.sleep(Kinect.CALIBRATION_SLEEP / 1000.)
+            cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
         self.dmin = xmin, ymin
         self.dmax = xmax, ymax
+        self.calibrated[1] = True
 
     def update_centroid(self):
         self.centroid = imageutils.centroid(self.masked, Kinect.CENTROID_STEP)
@@ -112,7 +118,7 @@ class Kinect:
         x, y = self.delta
         xmin, ymin = self.dmin
         xmax, ymax = self.dmax
-        return (x-xmin)/(xmax-xmin), (y-ymin)/(ymax-ymin)
+        return 1.*(x-xmin)/(xmax-xmin), 1.*(y-ymin)/(ymax-ymin)
 
     def set_threshold(self, tmin, tmax):
         self.tmin = tmin
@@ -122,4 +128,29 @@ class Kinect:
         if origin is None:
             origin = self.centroid
         self.origin = origin
+        self.arm_area = self.get_arm_area()
+        self.calibrated[2] = True
 
+    def update_parachute(self, hand_position):
+        if hand_position != Glove.FINGER_POSITIONS['FIST']:
+            self.parachute_state = 'closed'
+            return
+        self.update_image()
+        arm_area = self.get_arm_area()
+        print(arm_area)
+        if self.parachute_state == 'closed' and arm_area < self.arm_area / 2:
+            self.parachute_state = 'opening'
+        elif self.parachute_state == 'opening' and arm_area > self.arm_area / 2:
+            self.parachute_state = 'opened'
+       
+    def reset(self):
+        self.parachute_state = 'closed'
+        
+    def get_arm_area(self):
+        return sum(sum(self.masked[:,Kinect.SIZE[1]/2:]))
+        
+    def display(self,window):
+        if self.calibrated[0]:
+            cv2.imshow(window, self.masked)
+        else:
+            cv2.imshow(window, self.thresh)

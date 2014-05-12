@@ -16,6 +16,7 @@ class Glove:
         'GRAF':  [False, True, False, False]
     }
     
+    
     def __init__(self, port = "/dev/ttyACM0", baud=9600):
         self.ser = serial.Serial(port,baud)
         self.cal_fist = []
@@ -42,7 +43,7 @@ class Glove:
         return cal
         
     def get_hand_position(self):
-        values = self.getCalibratedValues()
+        values = self.get_calibrated_values()
         return [values[i] < 0.5 for i in range(Glove.FINGER_COUNT)]
      
     def calibrate(self,is_hand_closed):

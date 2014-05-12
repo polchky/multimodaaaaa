@@ -25,7 +25,6 @@ class Neutral(State):
             Mma.kinect.update()
             Mma.kinect.set_origin()
             print('ok')
-            time.sleep(1)
             self.key = ord('q')
         if self.key == ord('p'):
             Mma.kinect.tmax += 1
@@ -72,8 +71,9 @@ class Neutral(State):
     def on_stop(self):
         cv2.destroyAllWindows()
         Mma.kinect.destroy_windows()
-        
 class Waiting(State):
+    def on_start(self):
+        time.sleep(1)
     def next(self): 
         #if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
         #    return Mma.walking

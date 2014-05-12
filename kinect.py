@@ -1,7 +1,6 @@
 import freenect
 import numpy as np
 import cv2
-import time
 import imageutils
 from glove import Glove
 
@@ -86,8 +85,8 @@ class Kinect:
         self.calibrated[0] = True
 
     def calibrate_direction(self, window, timer=3000):
-        xmin, ymin = (np.inf, np.inf)
-        xmax, ymax = (0, 0)
+        xmin, ymin = (+np.inf, +np.inf)
+        xmax, ymax = (-np.inf, -np.inf)
         while timer > 0:
             self.update()
             self.display(window)
@@ -138,18 +137,18 @@ class Kinect:
         self.update_image()
         arm_area = self.get_arm_area()
         print(arm_area)
-        if self.parachute_state == 'closed' and arm_area < self.arm_area / 2:
+        if self.parachute_state == 'closed' and arm_area < self.arm_area/2:
             self.parachute_state = 'opening'
-        elif self.parachute_state == 'opening' and arm_area > self.arm_area / 2:
+        elif self.parachute_state == 'opening' and arm_area > self.arm_area/2:
             self.parachute_state = 'opened'
-       
+
     def reset(self):
         self.parachute_state = 'closed'
-        
+
     def get_arm_area(self):
-        return sum(sum(self.masked[:,Kinect.SIZE[1]/2:]))
-        
-    def display(self,window):
+        return sum(sum(self.masked[:, Kinect.SIZE[1]/2:]))
+
+    def display(self, window):
         if self.calibrated[0]:
             cv2.imshow(window, self.masked)
         else:

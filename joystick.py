@@ -29,8 +29,8 @@ class Joystick:
 
     # TODO: Map correct keys
     DEFAULT_ACTIONS_KEYBOARD = {
-        'Y': ((uinput.KEY_W, uinput.KEY_S), FALSE_ANALOG),
-        'X': ((uinput.KEY_D, uinput.KEY_A), FALSE_ANALOG),
+        'X': ((uinput.KEY_A, uinput.KEY_D), FALSE_ANALOG),
+        'Y': ((uinput.KEY_S, uinput.KEY_W), FALSE_ANALOG),
         'RX': (uinput.REL_X, ANALOG),
         'RY': (uinput.REL_Y, ANALOG),
         'para': (uinput.KEY_SPACE, BUTTON),
@@ -72,7 +72,7 @@ class Joystick:
     def update_joystick(self, direction):
         x, y = direction
         #for k, v in zip(["X", "Y", "RX", "RY"], [x, y, int(-10*x), int(-10*y)]):
-        for k, v in zip(["Y", "RX"], [y, int(-10*x)]):
+        for k, v in zip(["X", "Y", "RX"], [x, y, int(20*x)]):
             self.emit(k, v)
 
     def update_buttons(self, fingers):
@@ -129,7 +129,10 @@ class Joystick:
             self.device.emit_click(self.actions[k][0], syn)
         elif self.actions[k][1] == Joystick.FALSE_ANALOG:
             ks = self.actions[k][0]
-            vs = [1 if v > 0 else 0, 1 if v < 0 else 0]
+            if k == "X":
+                vs = [1 if v < -0.8 else 0, 1 if v > 0.8 else 0]
+            else:
+                vs = [1 if v < -0.3 else 0, 1 if v > 0.3 else 0]
             for i in (0, 1):
                 self.device.emit(ks[i], vs[i], False)
 

@@ -14,6 +14,7 @@ class Neutral(State):
         Mma.kinect.display(self.window)
         self.key = cv2.waitKey(50)
         #for test only
+        """
         if self.key == ord('t'):
             time.sleep(2)
             Mma.kinect.calibrate_mask(self.window)
@@ -26,6 +27,7 @@ class Neutral(State):
             Mma.kinect.set_origin()
             print('ok')
             self.key = ord('q')
+        """
         if self.key == ord('p'):
             Mma.kinect.tmax += 1
         elif self.key == ord('m'):
@@ -50,8 +52,8 @@ class Neutral(State):
             print('done')
     def next(self):
         if self.key == ord('q'):
-            #if Mma.glove.is_calibrated() == False:
-            #    print('Glove not calibrated\n')
+            if Mma.glove.is_calibrated() == False:
+                print('Glove not calibrated\n')
             if all(Mma.kinect.calibrated):
                 return Mma.waiting
             else:
@@ -71,16 +73,12 @@ class Neutral(State):
     def on_stop(self):
         cv2.destroyAllWindows()
         Mma.kinect.destroy_windows()
+        
 class Waiting(State):
-    def on_start(self):
-        time.sleep(1)
     def next(self): 
-        #if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
-        #    return Mma.walking
+        if Mma.glove.get_hand_position() == Mma.glove.FINGER_POSITIONS['FIST']:
+            return Mma.walking
         return Mma.waiting
-    def run(self):
-        Mma.kinect.update()
-        Mma.joystick.update_joystick(Mma.kinect.get_direction())
       
 class Walking(State):
     def run(self):
@@ -111,7 +109,7 @@ class Playing(State):
 class Mma(Machine):
     #init modules
     kinect = Kinect()
-    #glove = Glove(port = "/dev/ttyACM0")
+    glove = Glove(port = "/dev/ttyACM0")
     joystick = Joystick()
     
     def __init__(self):

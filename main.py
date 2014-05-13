@@ -88,19 +88,16 @@ class Walking(State):
         if Mma.joystick.is_walking():
             return Mma.walking
         return Mma.playing
-    def on_start(self):
-        print('entering walking state')
 
 class Playing(State):
     def run(self):
-        Mma.joystick.update(Mma.kinect.direction(), Mma.glove.get_hand_position)
+        Mma.kinect.update()
+        Mma.joystick.update(Mma.kinect.get_direction(), Mma.glove.get_hand_position())
     def next(self):
         Mma.kinect.update_parachute(Mma.glove.get_hand_position())
         if Mma.kinect.parachute_state == 'opened':
             return Mma.neutral
         return Mma.playing
-    def on_start(self):
-        print('entering playing state')
     def on_stop(self):
         Mma.joystick.open_parachute()
         Mma.kinect.reset()

@@ -72,7 +72,7 @@ class Joystick:
     def update_joystick(self, direction):
         x, y = direction
         #for k, v in zip(["X", "Y", "RX", "RY"], [x, y, int(-10*x), int(-10*y)]):
-        for k, v in zip(["X", "Y", "RX"], [x, y, int(20*x)]):
+        for k, v in zip(["X", "Y", "RX"], [x, y, int(50*x)]):
             self.emit(k, v)
 
     def update_buttons(self, fingers):
@@ -106,9 +106,9 @@ class Joystick:
     #  replace with "X" as it's supposed to be
     def walk(self, fingers):
         if self.last_gesture == Glove.FINGER_POSITIONS['OPEN']:
-            self.device.emit('walk', 1)
+            self.device.emit(uinput.KEY_W, 1)
         if fingers == Glove.FINGER_POSITIONS['OPEN']:
-            self.device.emit('walk', 0)
+            self.device.emit(uinput.KEY_W, 0)
             self.last_time_changed = self.get_time()
         self.last_gesture = fingers
 
@@ -130,7 +130,7 @@ class Joystick:
         elif self.actions[k][1] == Joystick.FALSE_ANALOG:
             ks = self.actions[k][0]
             if k == "X":
-                vs = [1 if v < -0.8 else 0, 1 if v > 0.8 else 0]
+                vs = [1 if v < -0.6 else 0, 1 if v > 0.6 else 0]
             else:
                 vs = [1 if v < -0.3 else 0, 1 if v > 0.3 else 0]
             for i in (0, 1):

@@ -129,14 +129,17 @@ class Kinect:
         return cx - ox, cy - oy
 
     def get_direction(self):
-        delta = self.delta
+        if not self.calibrated[1]:
+            return (0, 0)
+            
+        delta = list(self.delta)
         for i in [0, 1]:
             if delta[i] > 0:
                 delta[i] /= +1. * self.dmax[i]
             else:
                 delta[i] /= -1. * self.dmin[i]
 
-        return delta
+        return tuple(np.clip(delta, -1, 1))
 
     def set_origin(self, origin=None):
         if origin is None:
@@ -170,15 +173,18 @@ class Kinect:
             image = self.masked
         else:
             image = self.thresh
+        
+        direction = tuple([int(100*self.direction[i] + self.origin[i]) for i in (0,1)])
+        directionText = [round(self.direction[i]*100)/100 for i in (0,1)]
+        directionText = ["{:+.2f}".format(i) for i in directionText]
+        
         cv2.circle(image, self.origin, 8, 127, -1)
         cv2.circle(image, self.origin, 6, 0, -1)
-        cv2.circle(image, self.centroid, 6, 200, -1)
+        cv2.circle(image, direction, 6, 200, -1)
         cv2.circle(image, self.dmax, 6, 200, -1)
         cv2.circle(image, self.dmin, 6, 200, -1)
-        cv2.line(image, self.origin, self.centroid, 255, 1)
-        cv2.putText(image, str(self.delta), (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        cv2.putText(image, str([round(self.get_direction()[0], 2), round(self.get_direction()[1], 2)]), (300, 50),
-                    cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.line(image, self.origin, direction, 255, 1)
+        cv2.putText(image, str(directionText), (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
         cv2.imshow(window, image)
 
     @staticmethod

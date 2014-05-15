@@ -1,8 +1,9 @@
-import uinput
 import time
-import os
-import subprocess
+
+import uinput
+
 from glove import Glove
+from constants import RX_FACTOR, X_THRESH, Y_THRESH
 
 
 class Joystick:
@@ -54,10 +55,7 @@ class Joystick:
             elif t == Joystick.FALSE_ANALOG:
                 uinput_events.extend(a)
 
-        ev_before = [f for f in os.listdir(Joystick.DEV_INPUT) if f.startswith('event')]
         self.device = uinput.Device(uinput_events, name)
-        ev_after = [f for f in os.listdir(Joystick.DEV_INPUT) if f.startswith('event')]
-        self.event = Joystick.DEV_INPUT + list(set(ev_after) - set(ev_before))[0]
 
         self.parachute_opening = False
         self.last_gesture = Glove.FINGER_POSITIONS['OPEN']
@@ -71,8 +69,7 @@ class Joystick:
 
     def update_joystick(self, direction):
         x, y = direction
-        #for k, v in zip(["X", "Y", "RX", "RY"], [x, y, int(-10*x), int(-10*y)]):
-        for k, v in zip(["X", "Y", "RX"], [x, y, int(50*x)]):
+        for k, v in zip(["X", "Y", "RX"], [x, y, int(RX_FACTOR * x)]):
             self.emit(k, v)
 
     def update_buttons(self, fingers):
@@ -102,8 +99,6 @@ class Joystick:
     def open_parachute(self):
         self.emit('para', 1)
 
-    # TODO: Remove "walk" action (here and in DEFAULT_ACTIONS_*),
-    #  replace with "X" as it's supposed to be
     def walk(self, fingers):
         if self.last_gesture == Glove.FINGER_POSITIONS['OPEN']:
             self.device.emit(uinput.KEY_W, 1)
@@ -130,9 +125,9 @@ class Joystick:
         elif self.actions[k][1] == Joystick.FALSE_ANALOG:
             ks = self.actions[k][0]
             if k == "X":
-                vs = [1 if v < -0.6 else 0, 1 if v > 0.6 else 0]
+                vs = [1 if v < -X_THRESH else 0, 1 if v > X_THRESH else 0]
             else:
-                vs = [1 if v < -0.3 else 0, 1 if v > 0.3 else 0]
+                vs = [1 if v < -Y_THRESH else 0, 1 if v > Y_THRESH else 0]
             for i in (0, 1):
                 self.device.emit(ks[i], vs[i], False)
 
@@ -147,9 +142,6 @@ class Joystick:
 
     def check_last_changed(self):
         return self.get_time() - self.last_time_changed > self.MIN_PRESS_TIME
-
-    def start_xboxdrv(self):
-        subprocess.Popen(['./start_xboxdrv.sh', self.event])
 
     @staticmethod
     def get_time():

@@ -1,9 +1,11 @@
 import freenect
 import numpy as np
+
 import cv2
-import time
+
 import imageutils
 from glove import Glove
+from constants import *
 
 
 class Kinect:
@@ -15,14 +17,16 @@ class Kinect:
     DILATE_ITERATIONS = 4
 
     def __init__(self):
-        self.tmin = 0
-        self.tmax = 220
-        self.dmin = (Kinect.SIZE[1],Kinect.SIZE[0])
+        self.tmin = KINECT_TMIN
+        self.tmax = KINECT_TMAX
+        self.dmin = tuple(reversed(Kinect.SIZE))
         self.dmax = (0, 0)
         self.origin = (0, 0)
         self.centroid = (0, 0)
         self.delta = (0, 0)
         self.direction = (0, 0)
+        self.arm_area = 0
+        self.mask_center = (0, 0)
         self.mask = np.zeros(Kinect.SIZE, np.uint8)
         self.raw = np.zeros(Kinect.SIZE, np.uint8)
         self.thresh = np.zeros(Kinect.SIZE, np.uint8)
@@ -77,17 +81,24 @@ class Kinect:
             cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
 
-        c = imageutils.centroid(mask)
-        threshold = mask[c[1], c[0]] * 0.8
+        self.mask_center = c = imageutils.centroid(mask)
+        threshold = mask[c[1], c[0]] * MASK_THRESH_FACTOR
         mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
         mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
         mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
         self.calibrated[0] = True
+        self.calibrated[2] = False
+
+        return True
 
     def calibrate_direction(self, window, timer=3000):
-        xmin, ymin = (np.inf, np.inf)
-        xmax, ymax = (0, 0)
+        if not self.calibrated[2]:
+            print("ERROR: Must set origin first.")
+            return False
+
+        xmin, ymin = (+np.inf, +np.inf)
+        xmax, ymax = (-np.inf, -np.inf)
         while timer > 0:
             self.update()
             self.display(window)
@@ -96,9 +107,12 @@ class Kinect:
             xmax, ymax = max(xmax, x), max(ymax, y)
             cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
+
         self.dmin = xmin, ymin
         self.dmax = xmax, ymax
         self.calibrated[1] = True
+
+        return True
 
     def update_centroid(self):
         self.centroid = imageutils.centroid(self.masked, Kinect.CENTROID_STEP)
@@ -115,14 +129,14 @@ class Kinect:
         return cx - ox, cy - oy
 
     def get_direction(self):
-        x, y = self.centroid
-        xmin, ymin = self.dmin
-        xmax, ymax = self.dmax
-        return 2.*(x-xmin)/(xmax-xmin)-1, -2.*(y-ymin)/(ymax-ymin)+1
+        delta = self.delta
+        for i in [0, 1]:
+            if delta[i] > 0:
+                delta[i] /= +1. * self.dmax[i]
+            else:
+                delta[i] /= -1. * self.dmin[i]
 
-    def set_threshold(self, tmin, tmax):
-        self.tmin = tmin
-        self.tmax = tmax
+        return delta
 
     def set_origin(self, origin=None):
         if origin is None:
@@ -130,6 +144,7 @@ class Kinect:
         self.origin = origin
         self.arm_area = self.get_arm_area()
         self.calibrated[2] = True
+        return True
 
     def update_parachute(self, hand_position):
         if hand_position != Glove.FINGER_POSITIONS['FIST']:
@@ -142,14 +157,15 @@ class Kinect:
             self.parachute_state = 'opening'
         elif self.parachute_state == 'opening' and arm_area > self.arm_area / 2:
             self.parachute_state = 'opened'
-       
+
     def reset(self):
         self.parachute_state = 'closed'
-        
+
     def get_arm_area(self):
-        return sum(sum(self.masked[:,Kinect.SIZE[1]/2:]))
-        
-    def display(self,window):
+        c = self.mask_center[0]
+        return self.masked[:, c:].sum()
+
+    def display(self, window):
         if self.calibrated[0]:
             image = self.masked
         else:
@@ -160,9 +176,11 @@ class Kinect:
         cv2.circle(image, self.dmax, 6, 200, -1)
         cv2.circle(image, self.dmin, 6, 200, -1)
         cv2.line(image, self.origin, self.centroid, 255, 1)
-        cv2.putText(image,str(self.delta), (5,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        cv2.putText(image,str([round(self.get_direction()[0],2), round(self.get_direction()[1],2)]), (300,50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.putText(image, str(self.delta), (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
+        cv2.putText(image, str([round(self.get_direction()[0], 2), round(self.get_direction()[1], 2)]), (300, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
         cv2.imshow(window, image)
-        
-    def destroy_windows(self):
+
+    @staticmethod
+    def destroy_windows():
         cv2.destroyAllWindows()

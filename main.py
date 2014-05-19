@@ -1,7 +1,7 @@
 # StateMachine/Mma1/MmaTest.py
 # State Machine pattern using 'if' statements
 # to determine the next state.
-import cv2
+import cv2, time
 
 from constants import GLOVE_PORT
 
@@ -14,10 +14,12 @@ from machine import State, Machine
 # A different subclass for each state:
 
 class Neutral(State):
+    recording = False
     def run(self):
         Mma.kinect.update()
-        Mma.kinect.display(self.window)
-        self.key = cv2.waitKey(50)
+        image = Mma.kinect.display()
+        cv2.imshow("body", image)
+        self.key = cv2.waitKey(10)
         # for test only
         """
         if self.key == ord('t'):
@@ -55,6 +57,16 @@ class Neutral(State):
             Mma.kinect.update()
             if Mma.kinect.set_origin():
                 print('done')
+        elif self.key == ord('r'):
+            print('recording')
+            self.writer = cv2.VideoWriter("kinect.avi",cv2.cv.CV_FOURCC(*"FMP4"),10,(640, 480))
+            self.recording = True
+        elif self.key == ord('s'):
+            self.writer.release()
+            print('stop recording')
+            self.recording = False
+        if self.recording:
+            self.writer.write(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)) 
 
     def next(self):
         if self.key == ord('q'):
@@ -80,7 +92,6 @@ class Neutral(State):
 
     def on_stop(self):
         cv2.destroyAllWindows()
-        Mma.kinect.destroy_windows()
 
 
 class Waiting(State):
@@ -120,7 +131,7 @@ class Playing(State):
 class Mma(Machine):
     # init modules
     kinect = Kinect()
-    glove = Glove(port=GLOVE_PORT)
+    #glove = Glove(port=GLOVE_PORT)
     joystick = Joystick()
 
     def __init__(self):

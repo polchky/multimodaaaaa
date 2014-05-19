@@ -168,7 +168,7 @@ class Kinect:
         c = self.mask_center[0]
         return self.masked[:, c:].sum()
 
-    def display(self, window):
+    def display(self):
         if self.calibrated[0]:
             image = self.masked
         else:
@@ -185,8 +185,4 @@ class Kinect:
         cv2.circle(image, self.dmin, 6, 200, -1)
         cv2.line(image, self.origin, direction, 255, 1)
         cv2.putText(image, str(directionText), (5, 50), cv2.FONT_HERSHEY_SIMPLEX, 2, 255)
-        cv2.imshow(window, image)
-
-    @staticmethod
-    def destroy_windows():
-        cv2.destroyAllWindows()
+        return image

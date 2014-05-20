@@ -19,31 +19,30 @@ class Joystick:
     DEFAULT_ACTIONS_JOYSTICK = {
         'X': (uinput.ABS_X, ANALOG),
         'Y': (uinput.ABS_Y, ANALOG),
-        'RX': (uinput.ABS_RX, ANALOG),
-        'RY': (uinput.ABS_RY, ANALOG),
-        'para': (uinput.BTN_0, BUTTON),
-        'graf': (uinput.BTN_1, BUTTON),
-        'fuck': (uinput.BTN_2, BUTTON),
-        'yeah': (uinput.BTN_3, BUTTON),
-        'walk': (uinput.KEY_W, BUTTON)
-    }
-
-    # TODO: Map correct keys
-    DEFAULT_ACTIONS_KEYBOARD = {
-        'X': ((uinput.KEY_A, uinput.KEY_D), FALSE_ANALOG),
-        'Y': ((uinput.KEY_S, uinput.KEY_W), FALSE_ANALOG),
-        'RX': (uinput.ABS_RX, ANALOG),
-        'RY': (uinput.REL_Y, ANALOG),
+        'RX': (uinput.ABS_RY, ANALOG),
+        'RY': (uinput.ABS_RX, ANALOG),
         'para': (uinput.KEY_SPACE, BUTTON),
         'graf': (uinput.KEY_LEFTCTRL, BUTTON),
         'fuck': (uinput.BTN_0, BUTTON),
         'yeah': (uinput.BTN_2, BUTTON),
-        'walk': (uinput.KEY_W, BUTTON)
+        'walk': (uinput.KEY_W, BUTTON),
+        '_': (uinput.BTN_JOYSTICK, BUTTON)
     }
 
-    DEV_INPUT = '/dev/input/'
+    DEFAULT_ACTIONS_KEYBOARD = {
+        'X': ((uinput.KEY_A, uinput.KEY_D), FALSE_ANALOG),
+        'Y': ((uinput.KEY_S, uinput.KEY_W), FALSE_ANALOG),
+        'RX': (uinput.ABS_RX, ANALOG),
+        'RY': (uinput.ABS_RY, ANALOG),
+        'para': (uinput.KEY_SPACE, BUTTON),
+        'graf': (uinput.KEY_LEFTCTRL, BUTTON),
+        'fuck': (uinput.BTN_0, BUTTON),
+        'yeah': (uinput.BTN_2, BUTTON),
+        'walk': (uinput.KEY_W, BUTTON),
+        '_': (uinput.BTN_JOYSTICK, BUTTON)
+    }
 
-    def __init__(self, actions=DEFAULT_ACTIONS_KEYBOARD, name='Gamepad'):
+    def __init__(self, actions=DEFAULT_ACTIONS_JOYSTICK, name='Gamepad'):
         self.actions = actions
 
         uinput_events = []

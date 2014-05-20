@@ -3,7 +3,7 @@ import time
 import uinput
 
 from glove import Glove
-from constants import RX_FACTOR, X_THRESH, Y_THRESH
+from constants import R, X_THRESH, Y_THRESH
 
 
 class Joystick:
@@ -14,7 +14,7 @@ class Joystick:
 
     MIN_PRESS_TIME = 200  # milliseconds
     MIN_REPRESS_TIME = 700  # milliseconds
-    ANALOG_RANGE = (-100, 100, 0, 0)
+    ANALOG_RANGE = (-R, R, 0, 0)
 
     DEFAULT_ACTIONS_JOYSTICK = {
         'X': (uinput.ABS_X, ANALOG),
@@ -68,7 +68,7 @@ class Joystick:
 
     def update_joystick(self, direction):
         x, y = direction
-        for k, v in zip(["X", "Y", "RX"], [x, -y, int(RX_FACTOR * x)]):
+        for k, v in zip(["X", "Y", "RX"], [int(R*x), int(R*y), int(R*x)]):
             self.emit(k, v)
 
     def update_buttons(self, fingers):

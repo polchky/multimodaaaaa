@@ -1,20 +1,14 @@
 # StateMachine/Mma1/MmaTest.py
 # State Machine pattern using 'if' statements
 # to determine the next state.
-import cv2
+import cv2, time
 
 from constants import GLOVE_PORT
-from kinect import Kinect
+
+from video_kinect import Kinect
 from glove import Glove
 from joystick import Joystick
 from machine import State, Machine
-
-
-def draw_on_mask(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDBLCLK:
-        cv2.circle(Mma.kinect.mask, (x, y), 32, 255, -1)
-    elif event == cv2.EVENT_RBUTTONDBLCLK:
-        cv2.circle(Mma.kinect.mask, (x, y), 32, 0, -1)
 
 
 # A different subclass for each state:
@@ -45,10 +39,6 @@ class Neutral(State):
             Mma.kinect.tmax += 1
         elif self.key == ord('m'):
             Mma.kinect.tmax -= 1
-        elif self.key == ord('u'):
-            Mma.kinect.lmin += 10
-        elif self.key == ord('i'):
-            Mma.kinect.lmin -= 10
         elif self.key == ord('o'):
             Mma.glove.calibrate(0)
             print('done')
@@ -69,14 +59,29 @@ class Neutral(State):
                 print('done')
         elif self.key == ord('r'):
             print('recording')
-            self.writer = cv2.VideoWriter("kinect.avi",cv2.cv.CV_FOURCC(*"FMP4"),10,(640, 480))
+            self.writer_raw = cv2.VideoWriter("kinect_raw.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_color = cv2.VideoWriter("kinect_color.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_thresh = cv2.VideoWriter("kinect_tresh.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_mask = cv2.VideoWriter("kinect_mask.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_masked = cv2.VideoWriter("kinect_masked.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_complete = cv2.VideoWriter("kinect_complete.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
             self.recording = True
         elif self.key == ord('s'):
-            self.writer.release()
+            self.writer_color.release()
+            self.writer_raw.release()
+            self.writer_thresh.release()
+            self.writer_mask.release()
+            self.writer_masked.release()
+            self.writer_complete.release()
             print('stop recording')
             self.recording = False
         if self.recording:
-            self.writer.write(cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)) 
+            self.writer_raw.write(cv2.cvtColor(Mma.kinect.get_raw(), cv2.COLOR_GRAY2RGB)) 
+            self.writer_color.write(cv2.cvtColor(Mma.kinect.get_color(), cv2.COLOR_BGR2RGB)) 
+            self.writer_thresh.write(cv2.cvtColor(Mma.kinect.thresh, cv2.COLOR_GRAY2RGB)) 
+            self.writer_mask.write(cv2.cvtColor(Mma.kinect.mask, cv2.COLOR_GRAY2RGB)) 
+            self.writer_masked.write(cv2.cvtColor(Mma.kinect.masked, cv2.COLOR_GRAY2RGB)) 
+            self.writer_complete.write(cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)) 
 
     def next(self):
         if self.key == ord('q'):
@@ -90,7 +95,6 @@ class Neutral(State):
 
     def on_start(self):
         self.window = cv2.namedWindow("body")
-        cv2.setMouseCallback("body", draw_on_mask)
         print('entering neutral state')
         print('o\tcalibrate glove open\n' +
               'f\tcalibrate glove closed\n' +
@@ -142,7 +146,7 @@ class Playing(State):
 class Mma(Machine):
     # init modules
     kinect = Kinect()
-    glove = Glove(port=GLOVE_PORT)
+    #glove = Glove(port=GLOVE_PORT)
     joystick = Joystick()
 
     def __init__(self):

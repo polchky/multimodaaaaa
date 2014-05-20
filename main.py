@@ -1,14 +1,20 @@
 # StateMachine/Mma1/MmaTest.py
 # State Machine pattern using 'if' statements
 # to determine the next state.
-import cv2, time
+import cv2
 
 from constants import GLOVE_PORT
-
 from kinect import Kinect
 from glove import Glove
 from joystick import Joystick
 from machine import State, Machine
+
+
+def draw_on_mask(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDBLCLK:
+        cv2.circle(Mma.kinect.mask, (x, y), 32, 255, -1)
+    elif event == cv2.EVENT_RBUTTONDBLCLK:
+        cv2.circle(Mma.kinect.mask, (x, y), 32, 0, -1)
 
 
 # A different subclass for each state:
@@ -80,6 +86,7 @@ class Neutral(State):
 
     def on_start(self):
         self.window = cv2.namedWindow("body")
+        cv2.setMouseCallback("body", draw_on_mask)
         print('entering neutral state')
         print('o\tcalibrate glove open\n' +
               'f\tcalibrate glove closed\n' +

@@ -14,7 +14,7 @@ class Joystick:
 
     MIN_PRESS_TIME = 200  # milliseconds
     MIN_REPRESS_TIME = 700  # milliseconds
-    ANALOG_RANGE = (-0x8000, 0x8000, 0, 0)
+    ANALOG_RANGE = (-100, 100, 0, 0)
 
     DEFAULT_ACTIONS_JOYSTICK = {
         'X': (uinput.ABS_X, ANALOG),
@@ -32,7 +32,7 @@ class Joystick:
     DEFAULT_ACTIONS_KEYBOARD = {
         'X': ((uinput.KEY_A, uinput.KEY_D), FALSE_ANALOG),
         'Y': ((uinput.KEY_S, uinput.KEY_W), FALSE_ANALOG),
-        'RX': (uinput.REL_X, ANALOG),
+        'RX': (uinput.ABS_RX, ANALOG),
         'RY': (uinput.REL_Y, ANALOG),
         'para': (uinput.KEY_SPACE, BUTTON),
         'graf': (uinput.KEY_LEFTCTRL, BUTTON),
@@ -69,7 +69,7 @@ class Joystick:
 
     def update_joystick(self, direction):
         x, y = direction
-        for k, v in zip(["X", "Y", "RX"], [x, y, int(RX_FACTOR * x)]):
+        for k, v in zip(["X", "Y", "RX"], [x, -y, int(RX_FACTOR * x)]):
             self.emit(k, v)
 
     def update_buttons(self, fingers):

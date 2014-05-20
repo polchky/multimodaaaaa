@@ -131,7 +131,7 @@ class Playing(State):
 class Mma(Machine):
     # init modules
     kinect = Kinect()
-    #glove = Glove(port=GLOVE_PORT)
+    glove = Glove(port=GLOVE_PORT)
     joystick = Joystick()
 
     def __init__(self):

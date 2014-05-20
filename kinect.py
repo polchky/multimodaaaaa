@@ -10,11 +10,11 @@ from constants import *
 
 class Kinect:
     SIZE = (480, 640)
-    CALIBRATION_SLEEP = 100
+    CALIBRATION_SLEEP = 50
     CENTROID_STEP = 16
     KERNEL = np.ones((5, 5), np.uint8)
-    ERODE_ITERATIONS = 8
-    DILATE_ITERATIONS = 4
+    ERODE_ITERATIONS = 12
+    DILATE_ITERATIONS = 6
 
     def __init__(self):
         self.tmin = KINECT_TMIN
@@ -77,22 +77,25 @@ class Kinect:
         while timer > 0:
             self.update_image()
             mask += self.thresh / n
-            self.display(window)
+            #self.display(window)
+            cv2.imshow("C", mask)
             cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
 
         self.mask_center = c = imageutils.centroid(mask)
-        threshold = mask[c[1], c[0]] * MASK_THRESH_FACTOR
+        threshold = mask.max() * MASK_THRESH_FACTOR
+        
         mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
         mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
         mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
         self.calibrated[0] = True
         self.calibrated[2] = False
+        cv2.imshow("M", mask)
 
         return True
 
-    def calibrate_direction(self, window, timer=3000):
+    def calibrate_direction(self, window, timer=5000):
         if not self.calibrated[2]:
             print("ERROR: Must set origin first.")
             return False
@@ -101,7 +104,7 @@ class Kinect:
         xmax, ymax = (-np.inf, -np.inf)
         while timer > 0:
             self.update()
-            self.display(window)
+            #self.display(window)
             x, y = self.delta
             xmin, ymin = min(xmin, x), min(ymin, y)
             xmax, ymax = max(xmax, x), max(ymax, y)
@@ -153,12 +156,12 @@ class Kinect:
         if hand_position != Glove.FINGER_POSITIONS['FIST']:
             self.parachute_state = 'closed'
             return
-        self.update_image()
+        #self.update_image()
         arm_area = self.get_arm_area()
         print(arm_area)
-        if self.parachute_state == 'closed' and arm_area < self.arm_area / 2:
+        if self.parachute_state == 'closed' and arm_area < self.arm_area * PARACHUTE_THRESH:
             self.parachute_state = 'opening'
-        elif self.parachute_state == 'opening' and arm_area > self.arm_area / 2:
+        elif self.parachute_state == 'opening' and arm_area > self.arm_area * PARACHUTE_THRESH:
             self.parachute_state = 'opened'
 
     def reset(self):

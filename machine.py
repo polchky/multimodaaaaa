@@ -5,7 +5,7 @@ class Machine:
         self.current = initial
         self.current.on_start()
         self.current.run()
-        self.allocated_time = 100 #milliseconds
+        self.allocated_time = 10 #milliseconds
     # Template method:
     def run(self):
         while True:

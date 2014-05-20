@@ -10,16 +10,15 @@ from constants import *
 
 class Kinect:
     SIZE = (480, 640)
-    CALIBRATION_SLEEP = 50
+    CALIBRATION_SLEEP = 100
     CENTROID_STEP = 16
     KERNEL = np.ones((5, 5), np.uint8)
-    ERODE_ITERATIONS = 12
-    DILATE_ITERATIONS = 6
+    ERODE_ITERATIONS = 8
+    DILATE_ITERATIONS = 4
 
     def __init__(self):
         self.tmin = KINECT_TMIN
         self.tmax = KINECT_TMAX
-        self.lmin = KINECT_LMIN
         self.dmin = tuple(reversed(Kinect.SIZE))
         self.dmax = (0, 0)
         self.origin = (0, 0)
@@ -35,6 +34,11 @@ class Kinect:
         self.calibrated = [False, False, False]
         self.parachute_state = 'closed'
 
+    def get_color(self):
+        color, _ = freenect.sync_get_video()
+        color = imageutils.convert(color)
+        return color
+
     @staticmethod
     def get_raw():
         raw, _ = freenect.sync_get_depth()
@@ -47,7 +51,6 @@ class Kinect:
         image[image < self.tmin] = 0
         image[image > self.tmax] = 0
         image[image != 0] = 255
-        image[self.lmin:,:] = 0
         return image
 
     @staticmethod
@@ -80,24 +83,21 @@ class Kinect:
             self.update_image()
             mask += self.thresh / n
             #self.display(window)
-            cv2.imshow("C", mask)
             cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
 
         self.mask_center = c = imageutils.centroid(mask)
-        threshold = mask.max() * MASK_THRESH_FACTOR
-        
+        threshold = mask[c[1], c[0]] * MASK_THRESH_FACTOR
         mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
         mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
         mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
         self.mask = mask
         self.calibrated[0] = True
         self.calibrated[2] = False
-        cv2.imshow("M", mask)
 
         return True
 
-    def calibrate_direction(self, window, timer=5000):
+    def calibrate_direction(self, window, timer=3000):
         if not self.calibrated[2]:
             print("ERROR: Must set origin first.")
             return False
@@ -158,12 +158,12 @@ class Kinect:
         if hand_position != Glove.FINGER_POSITIONS['FIST']:
             self.parachute_state = 'closed'
             return
-        #self.update_image()
+        self.update_image()
         arm_area = self.get_arm_area()
         print(arm_area)
-        if self.parachute_state == 'closed' and arm_area < self.arm_area * PARACHUTE_THRESH:
+        if self.parachute_state == 'closed' and arm_area < self.arm_area / 2:
             self.parachute_state = 'opening'
-        elif self.parachute_state == 'opening' and arm_area > self.arm_area * PARACHUTE_THRESH:
+        elif self.parachute_state == 'opening' and arm_area > self.arm_area / 2:
             self.parachute_state = 'opened'
 
     def reset(self):
@@ -178,7 +178,7 @@ class Kinect:
             image = self.masked
         else:
             image = self.thresh
-        
+        image = image.copy()
         direction = tuple([int(100*self.direction[i] + self.origin[i]) for i in (0,1)])
         directionText = [round(self.direction[i]*100)/100 for i in (0,1)]
         directionText = ["{:+.2f}".format(i) for i in directionText]

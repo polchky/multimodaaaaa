@@ -160,7 +160,6 @@ class Kinect:
             return
         #self.update_image()
         arm_area = self.get_arm_area()
-        print(arm_area)
         if self.parachute_state == 'closed' and arm_area < self.arm_area * PARACHUTE_THRESH:
             self.parachute_state = 'opening'
         elif self.parachute_state == 'opening' and arm_area > self.arm_area * PARACHUTE_THRESH:

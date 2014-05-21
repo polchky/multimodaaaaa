@@ -115,7 +115,6 @@ class Waiting(State):
 class Walking(State):
     def run(self):
         Mma.joystick.walk(Mma.glove.get_hand_position())
-
     def next(self):
         if Mma.joystick.is_walking():
             return self

@@ -56,7 +56,6 @@ class Joystick:
 
         self.device = uinput.Device(uinput_events, name)
 
-        self.parachute_opening = False
         self.last_gesture = Glove.FINGER_POSITIONS['OPEN']
         self.last_time_pressed = 0
         self.last_time_changed = 0
@@ -78,14 +77,13 @@ class Joystick:
         else:
             self.last_time_changed = self.get_time()
             self.last_gesture = fingers
-            self.parachute_opening = False
             if fingers != Glove.FINGER_POSITIONS['FIST']:
                 self.ready_to_graffiti = False
 
     def emit_from_fingers(self, fingers):
         if fingers == Glove.FINGER_POSITIONS['FUCK']:
             self.emit('fuck', 1)
-        elif fingers == Glove.FINGER_POSITIONS['YEAH']:
+        elif any([fingers == Glove.FINGER_POSITIONS['YEAH'][i] for i in (0,1)]):
             self.emit('yeah', 1)
         elif fingers == Glove.FINGER_POSITIONS['GRAF']:
             self.ready_to_graffiti = True
@@ -113,6 +111,7 @@ class Joystick:
         for action in self.actions:
             self.emit(action, 0, False)
         self.device.syn()
+        self.last_gesture = Glove.FINGER_POSITIONS['OPEN']
 
     def emit(self, k, v, syn=True):
         if k not in self.actions:
@@ -129,9 +128,6 @@ class Joystick:
                 vs = [1 if v < -Y_THRESH else 0, 1 if v > Y_THRESH else 0]
             for i in (0, 1):
                 self.device.emit(ks[i], vs[i], False)
-
-    def is_parachute_opening(self):
-        return self.parachute_opening
 
     def check_last_pressed(self):
         if self.last_time_pressed < self.last_time_changed:

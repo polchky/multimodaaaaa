@@ -59,12 +59,12 @@ class Neutral(State):
                 print('done')
         elif self.key == ord('r'):
             print('recording')
-            self.writer_raw = cv2.VideoWriter("kinect_raw.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
-            self.writer_color = cv2.VideoWriter("kinect_color.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
-            self.writer_thresh = cv2.VideoWriter("kinect_tresh.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
-            self.writer_mask = cv2.VideoWriter("kinect_mask.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
-            self.writer_masked = cv2.VideoWriter("kinect_masked.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
-            self.writer_complete = cv2.VideoWriter("kinect_complete.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_raw = cv2.VideoWriter("videos/kinect_raw.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_color = cv2.VideoWriter("videos/kinect_color.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_thresh = cv2.VideoWriter("videos/kinect_tresh.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_mask = cv2.VideoWriter("videos/kinect_mask.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_masked = cv2.VideoWriter("videos/kinect_masked.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
+            self.writer_complete = cv2.VideoWriter("videos/kinect_complete.avi",cv2.cv.CV_FOURCC(*"FMP4"),12,(640, 480))
             self.recording = True
         elif self.key == ord('s'):
             self.writer_color.release()

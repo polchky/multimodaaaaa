@@ -42,7 +42,7 @@ while True:
     elif k == ord('r'):
         capturing = True
         print('recording')
-        writer = cv2.VideoWriter("glove.avi",cv2.cv.CV_FOURCC(*"FMP4"),24,(640, 480))
+        writer = cv2.VideoWriter("videos/glove.avi",cv2.cv.CV_FOURCC(*"FMP4"),24,(640, 480))
     elif k == ord('s'):
         writer.release()
         print('stop recording')

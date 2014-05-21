@@ -73,6 +73,29 @@ class Kinect:
         self.update_thresh()
         self.update_masked()
 
+    def calibrate_mask_old(self, window, timer=3000):
+        mask = np.zeros(Kinect.SIZE, np.uint8)
+        n = timer / Kinect.CALIBRATION_SLEEP
+        while timer > 0:
+            self.update_image()
+            mask += self.thresh / n
+            #self.display(window)
+            cv2.imshow("C", mask)
+            cv2.waitKey(Kinect.CALIBRATION_SLEEP)
+            timer -= Kinect.CALIBRATION_SLEEP
+
+        self.mask_center = imageutils.centroid(mask)
+        threshold = mask.max() * MASK_THRESH_FACTOR
+        
+        mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
+        mask = cv2.erode(mask, Kinect.KERNEL, Kinect.ERODE_ITERATIONS)
+        mask = cv2.dilate(mask, Kinect.KERNEL, Kinect.DILATE_ITERATIONS)
+        self.mask = mask
+        self.calibrated[0] = True
+        self.calibrated[2] = False
+        cv2.imshow("M", mask)
+        return True
+        
     def calibrate_mask(self, window, timer=3000):
         mask = np.zeros(Kinect.SIZE, np.uint8)
         n = timer / Kinect.CALIBRATION_SLEEP
@@ -84,7 +107,7 @@ class Kinect:
             cv2.waitKey(Kinect.CALIBRATION_SLEEP)
             timer -= Kinect.CALIBRATION_SLEEP
 
-        self.mask_center = c = imageutils.centroid(mask)
+        self.mask_center = imageutils.centroid(mask)
         threshold = mask.max() * MASK_THRESH_FACTOR
         
         mask = cv2.threshold(mask, threshold, 255, cv2.THRESH_BINARY_INV)[1]
@@ -94,7 +117,6 @@ class Kinect:
         self.calibrated[0] = True
         self.calibrated[2] = False
         cv2.imshow("M", mask)
-
         return True
 
     def calibrate_direction(self, window, timer=5000):

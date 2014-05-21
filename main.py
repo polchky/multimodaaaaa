@@ -26,21 +26,6 @@ class Neutral(State):
         image = Mma.kinect.display()
         cv2.imshow("body", image)
         self.key = cv2.waitKey(10)
-        # for test only
-        """
-        if self.key == ord('t'):
-            time.sleep(2)
-            Mma.kinect.calibrate_mask(self.window)
-            print('ok')
-            time.sleep(1)
-            Mma.kinect.calibrate_direction(self.window)
-            print('ok')
-            time.sleep(1)
-            Mma.kinect.update()
-            Mma.kinect.set_origin()
-            print('ok')
-            self.key = ord('q')
-        """
         if self.key == ord('p'):
             Mma.kinect.tmax += 1
         elif self.key == ord('m'):
